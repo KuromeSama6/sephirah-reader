@@ -58,12 +58,11 @@ export const CopyMangaProvider: MangaProvider = {
 
             const list = body.results.list;
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             return Ok(list.map(c => ({
                 id: c.path_word,
                 name: c.name,
                 coverUrl: c.cover,
+                authorName: c.author.map(d => d.name).join(", "),
             })));
 
         } catch (e) {

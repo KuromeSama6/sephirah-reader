@@ -14,6 +14,8 @@ export async function SerphirahAPI_GetProviderList(): Promise<{
     }));
 }
 
+
+
 export async function SephirahAPI_GetMangaProviderStatus(id: string): Promise<Result<void>> {
     const provider = GetMangaProvider(id);
     if (!provider) {

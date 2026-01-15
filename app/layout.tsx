@@ -18,12 +18,6 @@ export default function RootLayout(props: Readonly<{
             <ClientLayout>
                 {props.children}
             </ClientLayout>
-            <Toaster
-                position={"bottom-right"}
-                expand
-                richColors
-                duration={5000}
-            />
         </body>
         </html>
     );

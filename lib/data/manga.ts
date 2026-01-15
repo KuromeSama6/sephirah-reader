@@ -8,10 +8,16 @@ export interface MangaProvider {
     QuickSearch(keyword: string): Promise<Result<QuickSearchResult[]>>;
 }
 
+export interface ProviderEntry {
+    id: string,
+    name: string,
+}
+
 export type QuickSearchResult = {
     readonly id: string;
     readonly name: string;
     readonly coverUrl: string;
+    readonly authorName: string;
 }
 
 export interface Title {
