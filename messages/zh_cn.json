@@ -21,5 +21,10 @@
     },
     "home_page": {
         "subtitle": "开源网页端漫画阅读器"
+    },
+    "manga_info_page": {
+        "label_chapter_groups": "分组",
+        "label_chapters": "章节",
+        "label_locales": "本地化组"
     }
 }

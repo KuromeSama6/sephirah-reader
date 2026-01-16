@@ -1,8 +1,8 @@
 "use server";
 
 import {Err, ErrStr, Ok, Result} from "@/lib/util/result";
-import {LocaleGroup, ProviderEntry, QuickSearchResult, Title} from "@/lib/data/manga";
-import {GetMangaProvider, MangaProviders} from "@/lib/provider/provider";
+import {Chapter, LocaleGroup, ProviderEntry, QuickSearchResult, Title} from "@/lib/data/manga";
+import {GetChaptersOpt, GetMangaProvider, MangaProviders} from "@/lib/provider/provider";
 
 export async function SephirahAPI_GetProviderList(): Promise<ProviderEntry[]> {
     return MangaProviders.map(c => ({
@@ -43,7 +43,7 @@ export async function SephirahAPI_QuickSearch(providerId: string, keyword: strin
     }
 }
 
-export async function SephirahAPI_GetTitleInfo(providerId: string, titleId: string): Promise<Result<Title | null>> {
+export async function SephirahAPI_GetTitleInfo(providerId: string, titleId: string): Promise<Result<Title>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         return Ok(await provider.GetTitleInfo(titleId));
@@ -52,10 +52,21 @@ export async function SephirahAPI_GetTitleInfo(providerId: string, titleId: stri
     }
 }
 
-export async function SephirahAPI_GetChapters(providerId: string, titleId: string): Promise<Result<LocaleGroup[]>> {
+export async function SephirahAPI_GetChapters(providerId: string, titleId: string, opts?: GetChaptersOpt): Promise<Result<LocaleGroup[]>> {
     const provider = GetMangaProvider(providerId)!;
     try {
-        return Ok(await provider.GetChapters(titleId));
+        const chapters = await provider.GetChapters(titleId, opts);
+        return Ok(chapters);
+    } catch (error) {
+        return Err(error as Error);
+    }
+}
+
+export async function SephirahAPI_GetChapterInfo(providerId: string, titleId: string, chapterId: string): Promise<Result<Chapter>> {
+    const provider = GetMangaProvider(providerId)!;
+    try {
+        const chapters = await provider.GetChapterInfo(titleId, chapterId);
+        return Ok(chapters);
     } catch (error) {
         return Err(error as Error);
     }

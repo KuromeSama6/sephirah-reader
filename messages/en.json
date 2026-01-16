@@ -21,5 +21,10 @@
     },
     "home_page": {
         "subtitle": "The open-source web manga reader."
+    },
+    "manga_info_page": {
+        "label_chapter_groups": "Chapter Groups",
+        "label_chapters": "Chapters",
+        "label_locales": "Localizations"
     }
 }

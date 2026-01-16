@@ -1,7 +1,11 @@
 import "server-only";
 import {CopyMangaProvider} from "@/lib/provider/manga/copymanga";
 import {Result} from "@/lib/util/result";
-import {LocaleGroup, QuickSearchResult, Title} from "@/lib/data/manga";
+import {Chapter, LocaleGroup, QuickSearchResult, Title} from "@/lib/data/manga";
+
+export type GetChaptersOpt = {
+    title: Title,
+};
 
 export interface MangaProvider {
     readonly id: string;
@@ -9,10 +13,11 @@ export interface MangaProvider {
 
     GetStatus(): Promise<void>;
     QuickSearch(keyword: string): Promise<QuickSearchResult[]>;
-    GetTitleInfo(id: string): Promise<Title | null>;
-    GetChapters(id: string): Promise<LocaleGroup[]>;
+    GetTitleInfo(id: string): Promise<Title>;
+    GetChapters(id: string, options?: GetChaptersOpt): Promise<LocaleGroup[]>;
+    GetChapterInfo(titleId: string, id: string): Promise<Chapter>;
+    GetImageUrls(chapterId: string): Promise<string[]>;
 }
-
 
 export const MangaProviders: MangaProvider[] = [
     CopyMangaProvider,

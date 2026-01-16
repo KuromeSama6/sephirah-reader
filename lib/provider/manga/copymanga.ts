@@ -1,8 +1,7 @@
 import "server-only";
-import {Author, LocaleGroup, QuickSearchResult, Title, TitleStatus} from "@/lib/data/manga";
-import {MangaProvider} from "@/lib/provider/provider";
+import {Author, Chapter, LocaleGroup, QuickSearchResult, Title, TitleStatus} from "@/lib/data/manga";
+import {GetChaptersOpt, MangaProvider} from "@/lib/provider/provider";
 import {getTranslations} from "next-intl/server";
-import axios, {AxiosHeaders} from "axios";
 
 const API_BASE_URL = "https://api.2025copy.com/api/v3";
 const API_HEADER_VERSION = "2025.11.21";
@@ -18,8 +17,7 @@ function GetAPIRequestHeaders() {
     ret.append("version", API_HEADER_VERSION);
     ret.append("region", "1");
     ret.append("webp", " 1");
-
-    return new AxiosHeaders(ret.toString());
+    return ret;
 }
 
 function GetAPIRequestURL(path: string): URL {
@@ -38,9 +36,17 @@ export const CopyMangaProvider: MangaProvider = {
     async GetStatus(): Promise<void> {
         const url = GetAPIRequestURL("/system/config/2020/1");
 
-        await axios.get(url.toString(), {
+        const res = await fetch(url.toString(), {
+            method: "GET",
             headers: GetAPIRequestHeaders(),
+            cache: "force-cache",
+            next: {
+                revalidate: 1200,
+            }
         })
+        if (!res.ok) {
+            throw `API request failed with status ${res.status}`;
+        }
     },
 
     async QuickSearch(keyword: string): Promise<QuickSearchResult[]> {
@@ -50,12 +56,18 @@ export const CopyMangaProvider: MangaProvider = {
         url.searchParams.append("offset", "0");
         url.searchParams.append("q_type", "");
 
-        const res = await axios.get(url.toString(), {
+        const res = await fetch(url.toString(), {
+            method: "GET",
             headers: GetAPIRequestHeaders(),
+            cache: "force-cache",
+            next: {
+                revalidate: 3600,
+            }
         })
         if (res.status !== 200) throw `API request failed with status ${res.status}`;
 
-        const body = await res.data;
+        const body = await res.json();
+
         const list = body.results.list;
 
         return list.map(c => ({
@@ -66,16 +78,21 @@ export const CopyMangaProvider: MangaProvider = {
         }));
     },
 
-    async GetTitleInfo(id: string): Promise<Title | null> {
+    async GetTitleInfo(id: string): Promise<Title> {
         const headers = GetAPIRequestHeaders();
 
         const url = GetAPIRequestURL(`/comic2/${id}`);
-        const res = await axios.get(url.toString(), {
+        const res = await fetch(url.toString(), {
+            method: "GET",
             headers,
+            cache: "force-cache",
+            next: {
+                revalidate: 3600,
+            }
         })
         if (res.status !== 200) throw `API request failed with status ${res.status}`;
 
-        const body = res.data;
+        const body = await res.json();
         const data = body.results;
         const comicData = data.comic;
 
@@ -94,16 +111,21 @@ export const CopyMangaProvider: MangaProvider = {
         };
     },
 
-    async GetChapters(id: string): Promise<LocaleGroup[]> {
+    async GetChapters(id: string, options?: GetChaptersOpt): Promise<LocaleGroup[]> {
         const CHUNK = 500;
         let offset = 0;
         let max = CHUNK;
 
         const headers = GetAPIRequestHeaders();
+        const t = await getTranslations();
 
         const ret: LocaleGroup = {
             id: "default",
             locale: "zh",
+            localizer: {
+                id: "default",
+                name: t("generic.default"),
+            },
             chapterGroups: [],
         }
 
@@ -114,12 +136,17 @@ export const CopyMangaProvider: MangaProvider = {
             url.searchParams.append("limit", "500");
             url.searchParams.append("offset", offset.toString());
 
-            const res = await axios.get(url.toString(), {
+            const res = await fetch(url.toString(), {
+                method: "GET",
                 headers,
+                cache: "force-cache",
+                next: {
+                    revalidate: 3600,
+                }
             })
             if (res.status !== 200) throw `API request failed with status ${res.status}`;
 
-            const body = res.data;
+            const body = await res.json();
             max = body.results.total;
             offset += CHUNK;
 
@@ -150,5 +177,34 @@ export const CopyMangaProvider: MangaProvider = {
         }
 
         return [ret];
+    },
+
+    async GetChapterInfo(titleId: string, id: string): Promise<Chapter> {
+        const headers = GetAPIRequestHeaders();
+
+        const url = GetAPIRequestURL(`/comic/${titleId}/chapter2/${id}`);
+        const res = await fetch(url.toString(), {
+            method: "GET",
+            headers,
+            cache: "force-cache",
+            next: {
+                revalidate: 3600,
+            }
+        })
+        if (res.status !== 200) throw `API request failed with status ${res.status}`;
+
+        const body = await res.json();
+        const data = body.results;
+
+        return {
+            id: data.chapter.uuid,
+            name: data.chapter.name,
+            ord: data.chapter.ordered,
+        };
+    },
+
+    async GetImageUrls(chapterId: string): Promise<string[]> {
+
+        return [];
     }
 }

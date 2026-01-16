@@ -96,7 +96,7 @@ export function Navbar() {
                                             <Link href={c.path} key={c.path} className={cn("w-full", c.className)} onClick={() => setShowMenuDropdown(false)}>
                                                 <div className={cn("flex gap-2 items-center", pathName === c.path ? "" : "text-muted-foreground")}>
                                                     {c.icon}
-                                                    <span className={pathName === c.path ? "font-bold" : ""}>{c.i18nKey}</span>
+                                                    <span className={pathName === c.path ? "font-bold" : ""}>{t(c.i18nKey)}</span>
                                                 </div>
                                             </Link>
                                         )
