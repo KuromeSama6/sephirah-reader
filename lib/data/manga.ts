@@ -1,29 +1,22 @@
 import {Result} from "@/lib/util/result";
-
-export interface MangaProvider {
-    readonly id: string;
-    readonly displayName: string;
-
-    GetStatus(): Promise<Result<void>>;
-    QuickSearch(keyword: string): Promise<Result<QuickSearchResult[]>>;
-}
+import {LocaleType} from "@/i18n/locale";
 
 export interface ProviderEntry {
     id: string,
     name: string,
 }
 
-export type QuickSearchResult = {
+export interface QuickSearchResult {
     readonly id: string;
     readonly name: string;
     readonly coverUrl: string;
     readonly authorName: string;
+    readonly ranking: number;
 }
 
 export interface Title {
     readonly id: string;
     readonly metadata: TitleMetadata;
-    readonly locales: LocaleGroup;
 }
 
 export interface Chapter {
@@ -34,9 +27,9 @@ export interface Chapter {
 
 export interface LocaleGroup {
     readonly id: string;
-    readonly locale: string;
+    readonly locale: LocaleType;
     readonly localizer?: Localizer;
-    readonly chapters: ChapterGroup[];
+    readonly chapterGroups: ChapterGroup[];
 }
 
 export interface ChapterGroup {
@@ -51,6 +44,7 @@ export interface TitleMetadata {
     readonly description: string;
     readonly coverUrl: string;
     readonly authors: Author[];
+    readonly status: TitleStatus;
 }
 
 export interface Author {
@@ -61,4 +55,11 @@ export interface Author {
 export interface Localizer {
     readonly id: string;
     readonly name: string;
+}
+
+export enum TitleStatus {
+    ONGOING,
+    COMPLETED,
+    HIATUS,
+    CANCELLED,
 }

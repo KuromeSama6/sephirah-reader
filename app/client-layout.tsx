@@ -2,9 +2,10 @@
 
 import {ThemeProvider} from "next-themes";
 import {ReactNode} from "react";
-import {Navbar} from "@/components/common/Navbar";
+import {Navbar} from "@/components/common/navbar";
 import {Button} from "@/components/ui/button";
 import {Toaster} from "sonner";
+import {LoadingBarContainer} from "react-top-loading-bar";
 
 export function ClientLayout(props: {
     children: ReactNode;
@@ -12,9 +13,11 @@ export function ClientLayout(props: {
     return (
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             <Navbar/>
-            <div>
-                {props.children}
-            </div>
+            <LoadingBarContainer>
+                <div>
+                    {props.children}
+                </div>
+            </LoadingBarContainer>
             <div className={"absolute bottom-0 w-full flex items-center justify-center"}>
                 <Footer/>
             </div>

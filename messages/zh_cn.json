@@ -1,0 +1,25 @@
+{
+    "common": {
+        "navbar": {
+            "options": {
+                "accounts": "账户",
+                "home": "主页",
+                "options": "选项",
+                "providers": "源站"
+            }
+        }
+    },
+    "generic": {
+        "default": "默认"
+    },
+    "global": {
+        "error": {
+            "content_load_error": "无法加载该内容",
+            "content_load_error_message": "加载该内容时出现错误： {err}"
+        },
+        "title": "Sephirah 阅读器"
+    },
+    "home_page": {
+        "subtitle": "开源网页端漫画阅读器"
+    }
+}

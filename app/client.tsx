@@ -1,43 +1,96 @@
 "use client";
-import {InputGroup, InputGroupAddon, InputGroupInput} from "@/components/ui/input-group";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+    InputGroupText
+} from "@/components/ui/input-group";
 import {MdBook, MdCircle, MdMoreHoriz, MdSearch} from "react-icons/md";
 import {Button} from "@/components/ui/button";
-import {FormEvent, FormEventHandler, useEffect, useState} from "react";
+import {FormEvent, useEffect, useState} from "react";
 import {SephirahAPI_GetMangaProviderStatus, SephirahAPI_QuickSearch} from "@/lib/api";
 import {Badge} from "@/components/ui/badge";
-import {cn} from "@/lib/utils";
+import {cn, IsChinese} from "@/lib/utils";
 import {Spinner} from "@/components/ui/spinner";
 import {toast} from "sonner";
 import {ProviderEntry, QuickSearchResult} from "@/lib/data/manga";
-import Image from 'next/image';
 import {ImageEx} from "@/components/util/client";
+import Fuse from "fuse.js";
+import {ChineseSimplifiedToTraditional, ChineseTraditionalToSimplified} from "@/lib/opencc";
+import Link from "next/link";
 
-type ResultEntry = [ProviderEntry, QuickSearchResult];
+interface ResultEntry {
+    provider: ProviderEntry,
+    result: QuickSearchResult,
+}
 
 export function Search(props: {
     providerList: ProviderEntry[]
 }) {
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(false);
-
+    const [searched, setSearched] = useState(false);
     const [results, setResults] = useState<ResultEntry[]>([]);
+    const [isSimplifiedChinese, setIsSimplifiedChinese] = useState(true);
+
+    function OnSearchChange(text: string) {
+        setQuery(text);
+    }
+
+    function ToggleChinese() {
+        setIsSimplifiedChinese(!isSimplifiedChinese);
+
+        if (isSimplifiedChinese) {
+            setQuery(ChineseSimplifiedToTraditional(query));
+        } else {
+            setQuery(ChineseTraditionalToSimplified(query));
+        }
+    }
+
+    function SortedResults(results: ResultEntry[], kw: string): ResultEntry[] {
+        const fuse = new Fuse(results, {
+            keys: ["result.name"],
+            includeScore: true,
+            threshold: 0.4,
+        })
+        const res = fuse.search(kw);
+
+        return res.sort((a, b) => {
+            const scoreDiff = (a.score ?? 0) - (b.score ?? 0);
+            if (scoreDiff !== 0) return scoreDiff;
+
+            // 2️⃣ secondary: ranking (higher ranking first)
+            return b.item.result.ranking - a.item.result.ranking;
+        }).map(c => c.item);
+    }
 
     async function Submit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
+        const kw = query;
+
         if (!query.trim()) return;
         if (loading) return;
 
+        setSearched(true);
         setLoading(true);
         setResults([]);
 
         let finishedCount = 0;
+
+        const results: ResultEntry[] = [];
         for (const provider of props.providerList) {
-            SephirahAPI_QuickSearch(provider.id, query.trim())
+            SephirahAPI_QuickSearch(provider.id, kw.trim())
                 .then(res => {
                     if (res.ok) {
                         for (const result of res.value) {
-                            setResults(prevResults => ([...prevResults, [provider, result]]));
+                            results.push({
+                                provider,
+                                result
+                            });
                         }
+
+                        setResults(SortedResults(results, kw));
                     }
                 })
                 .catch(e => {
@@ -56,7 +109,7 @@ export function Search(props: {
         <div className={"flex flex-col gap-2 w-full"}>
             <form className={"flex gap-2 w-full items-center"} onSubmit={Submit}>
                 <InputGroup>
-                    <InputGroupInput placeholder={"Look for a title..."} value={query} onChange={(e) => setQuery(e.target.value)}/>
+                    <InputGroupInput placeholder={"Look for a title..."} value={query} onChange={(e) => OnSearchChange(e.target.value)}/>
                     <InputGroupAddon>
                         <MdBook/>
                     </InputGroupAddon>
@@ -65,8 +118,13 @@ export function Search(props: {
                             <Spinner/>
                         </InputGroupAddon>
                     )}
+                    {!loading && IsChinese(query) && (
+                        <InputGroupAddon align={"inline-end"} onClick={ToggleChinese}>
+                            <InputGroupButton>简⇄繁</InputGroupButton>
+                        </InputGroupAddon>
+                    )}
                 </InputGroup>
-                <Button variant={"default"} disabled={!query.trim()} type={"submit"}>
+                <Button variant={"default"} disabled={!query.trim() || loading} type={"submit"}>
                     <MdSearch/>
                     <span className={"hidden md:block"}>Search</span>
                 </Button>
@@ -74,7 +132,7 @@ export function Search(props: {
                     <MdMoreHoriz/>
                 </Button>
             </form>
-            <ProviderListPreview providers={props.providerList}/>
+            {searched ? <SearchProviderList providers={props.providerList} results={results}/> : <ProviderListPreview providers={props.providerList}/>}
             <div className={"flex flex-col gap-2 w-full"}>
                 {
                     results.map((row, i) => (
@@ -89,17 +147,17 @@ export function Search(props: {
 function SearchResultBox(props: {
     entry: ResultEntry,
 }) {
-    const [provider, result] = props.entry;
+    const {provider, result} = props.entry;
 
     return (
-        <div className={"flex gap-2 w-full p-2 border border-border rounded-md hover:bg-accent hover:cursor-pointer transition duration-200"}>
+        <Link className={"flex gap-2 w-full p-2 border border-border rounded-md hover:bg-accent hover:cursor-pointer transition duration-200"} href={`/manga/title?provider=${provider.id}&title=${result.id}`}>
             <ImageEx src={result.coverUrl} alt={""} width={128} height={256} className={"object-cover min-w-24 md:min-w-32 rounded-md"} placeholder={"blur"} blurDataURL={"https://placehold.co/1441x2048/000/FFF?text=Image%20Loading&font=source-sans-pro"}/>
             <div className={"flex flex-col gap-1 ms-auto w-full justify-center"}>
                 <span className={"text-muted-foreground text-sm"}>{provider.name}</span>
                 <h1 className={"font-semibold text-xl md:text-2xl"}>{result.name}</h1>
                 <span className={"text-muted-foreground text-sm"}>{result.authorName}</span>
             </div>
-        </div>
+        </Link>
     )
 }
 
@@ -128,7 +186,6 @@ function ProviderListPreview(props: {
             SephirahAPI_GetMangaProviderStatus(provider.id)
                 .then(res => {
                     SetProviderStatus(provider.id, res.ok);
-                    console.log(`Status of provider ${provider.id}: ${res.ok}`);
                 })
                 .catch(err => {
                     console.error(`Failed to get status for provider ${provider.id}:`, err);
@@ -149,6 +206,37 @@ function ProviderListPreview(props: {
                             {p.name}
                         </Badge>
                     );
+                })
+            }
+        </div>
+    )
+}
+
+function SearchProviderList(props: {
+    providers: ProviderEntry[],
+    results: ResultEntry[],
+}) {
+    type Status = number | Error;
+    const data: Record<string, Status> = {};
+    for (const provider of props.providers) {
+        const count = props.results.filter(c => c.provider.id === provider.id);
+        data[provider.id] = count.length;
+    }
+
+    return (
+        <div className={"flex gap-2"}>
+            {
+                props.providers.map((c, i) => {
+                    const isErr = data[c.id] instanceof Error;
+
+                    return (
+                        <Badge key={i} variant={isErr ? "destructive" : "outline"}>
+                            <span>{c.name}</span>
+                            <Badge variant={"outline"}>
+                                <span>{isErr ? "" : String(data[c.id])}</span>
+                            </Badge>
+                        </Badge>
+                    )
                 })
             }
         </div>

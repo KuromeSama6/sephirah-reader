@@ -1,0 +1,1 @@
+export type LocaleType = "en" | "zh" | "jp" | "kr" | "other";

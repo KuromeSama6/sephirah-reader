@@ -1,0 +1,25 @@
+{
+    "common": {
+        "navbar": {
+            "options": {
+                "accounts": "Accounts",
+                "home": "Home",
+                "options": "Options",
+                "providers": "Providers"
+            }
+        }
+    },
+    "generic": {
+        "default": "Default"
+    },
+    "global": {
+        "error": {
+            "content_load_error": "Content Load Error",
+            "content_load_error_message": "An error occurred while loading this content: {err}"
+        },
+        "title": "Sephirah Reader"
+    },
+    "home_page": {
+        "subtitle": "The open-source web manga reader."
+    }
+}

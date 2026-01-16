@@ -17,10 +17,11 @@ import {usePathname, useRouter} from "next/navigation";
 import Link from "next/link";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 import {cn} from "@/lib/utils";
+import {useTranslations} from "use-intl";
 
 interface Option {
     path: string;
-    name: string;
+    i18nKey: string;
     icon: React.ReactNode;
     className?: string[];
     variant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | null | undefined;
@@ -30,22 +31,22 @@ interface Option {
 const options: Option[] = [
     {
         path: "/",
-        name: "Home",
+        i18nKey: "home",
         icon: <MdHome/>
     },
     {
         path: "/providers",
-        name: "Providers",
+        i18nKey: "providers",
         icon: <MdOutlineSource/>
     },
     {
         path: "/options",
-        name: "Options",
+        i18nKey: "options",
         icon: <MdSettings/>
     },
     {
         path: "/accounts",
-        name: "Accounts",
+        i18nKey: "accounts",
         icon: <MdAccountCircle/>,
         className: ["ms-auto"]
     }
@@ -53,6 +54,7 @@ const options: Option[] = [
 
 export function Navbar() {
     const pathName = usePathname();
+    const t = useTranslations("common.navbar.options");
 
     const [showMenuDropdown, setShowMenuDropdown] = useState(false);
 
@@ -69,7 +71,7 @@ export function Navbar() {
                                 <Link href={c.path} key={c.path} className={(c.className ?? []).join(" ")}>
                                     <Button size={"lg"} color={c.color ?? "default"} variant={"ghost"}>
                                         {c.icon}
-                                        <span className={"font-bold"}>{c.name}</span>
+                                        <span className={"font-bold"}>{t(c.i18nKey)}</span>
                                     </Button>
                                 </Link>
                             )
@@ -94,7 +96,7 @@ export function Navbar() {
                                             <Link href={c.path} key={c.path} className={cn("w-full", c.className)} onClick={() => setShowMenuDropdown(false)}>
                                                 <div className={cn("flex gap-2 items-center", pathName === c.path ? "" : "text-muted-foreground")}>
                                                     {c.icon}
-                                                    <span className={pathName === c.path ? "font-bold" : ""}>{c.name}</span>
+                                                    <span className={pathName === c.path ? "font-bold" : ""}>{c.i18nKey}</span>
                                                 </div>
                                             </Link>
                                         )

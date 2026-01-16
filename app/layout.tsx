@@ -1,23 +1,24 @@
 import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
 import {ClientLayout} from "@/app/client-layout";
-import {Toaster} from "sonner";
+import {NextIntlClientProvider} from "next-intl";
 
 export const metadata: Metadata = {
     title: "Sephirah Reader",
     description: "Comic reader supporting multiple sources",
 };
 
-export default function RootLayout(props: Readonly<{
+export default async function RootLayout(props: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
         <body>
-            <ClientLayout>
-                {props.children}
-            </ClientLayout>
+            <NextIntlClientProvider>
+                <ClientLayout>
+                    {props.children}
+                </ClientLayout>
+            </NextIntlClientProvider>
         </body>
         </html>
     );
