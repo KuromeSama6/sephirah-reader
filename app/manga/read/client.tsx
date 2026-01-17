@@ -4,7 +4,7 @@ import {Chapter, ProviderEntry, Title} from "@/lib/data/manga";
 import {useDefaultLoadingBar} from "@/lib/util/client";
 import {useEffect, useRef, useState} from "react";
 import {ImageEx} from "@/components/util/client";
-import {SephirahAPI_GetChapterInfo, SephirahAPI_GetImageURLs, SephirahAPI_GetTitleInfo} from "@/lib/api";
+import {API_GetChapterInfo, API_GetImageURLs, API_GetTitleInfo} from "@/lib/api";
 import {useTranslations} from "use-intl";
 import {cn} from "@/lib/utils";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -26,21 +26,21 @@ export function MangaReader(props: {
         async function Load() {
             loadingBar.start();
 
-            const title = await SephirahAPI_GetTitleInfo(props.providerId, props.title);
+            const title = await API_GetTitleInfo(props.providerId, props.title);
             if (!title.ok || !title.value) {
                 console.error("Failed to load title/chapter", title.value);
                 return;
             }
             setTitle(title.value);
 
-            const chapter = await SephirahAPI_GetChapterInfo(props.providerId, props.title, props.chapter);
+            const chapter = await API_GetChapterInfo(props.providerId, props.title, props.chapter);
             if (!chapter.ok || !chapter.value) {
                 console.error("Failed to load title/chapter", chapter.value);
                 return;
             }
             setChapter(chapter.value);
 
-            const urls = await SephirahAPI_GetImageURLs(props.providerId, props.title, props.chapter);
+            const urls = await API_GetImageURLs(props.providerId, props.title, props.chapter);
             if (!urls.ok || !urls.value || urls.value.length === 0) {
                 console.error("Failed to load image URLs", urls.ok ? "No URLs found" : urls.value);
                 return;

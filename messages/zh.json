@@ -17,6 +17,7 @@
             "content_load_error": "无法加载该内容",
             "content_load_error_message": "加载该内容时出现错误： {err}"
         },
+        "label_language": "语言",
         "title": "Sephirah 阅读器"
     },
     "home_page": {
@@ -25,7 +26,14 @@
     "manga_info_page": {
         "label_chapter_groups": "分组",
         "label_chapters": "章节",
-        "label_locales": "本地化组"
+        "label_locales": "本地化组",
+        "status_badge": {
+            "cancelled": "停止更新",
+            "completed": "已完结",
+            "hiatus": "休刊中",
+            "ongoing": "连载中",
+            "unknown": "未知"
+        }
     },
     "reader": {
         "image_load_error": "无法加载该图片。请尝试刷新页面。",

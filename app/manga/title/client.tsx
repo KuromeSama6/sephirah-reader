@@ -2,10 +2,10 @@
 
 import {ImageEx} from "@/components/util/client";
 import {Badge} from "@/components/ui/badge";
-import {MdBedtime, MdCancel, MdCheckCircle, MdGridView, MdTableRows, MdUpdate} from "react-icons/md";
+import {MdBedtime, MdCancel, MdCheckCircle, MdGridView, MdQuestionMark, MdTableRows, MdUpdate} from "react-icons/md";
 import {CommonErrorBox, useDefaultLoadingBar} from "@/lib/util/client";
 import {useEffect, useState} from "react";
-import {SephirahAPI_GetChapters, SephirahAPI_GetTitleInfo} from "@/lib/api";
+import {API_GetChapters, API_GetTitleInfo} from "@/lib/api";
 import {Chapter, ChapterGroup, LocaleGroup, ProviderEntry, Title, TitleStatus} from "@/lib/data/manga";
 import {Skeleton} from "@/components/ui/skeleton";
 import {toast} from "sonner";
@@ -33,7 +33,7 @@ export function MangaInfo(props: {
                 setTitle(undefined);
                 loadingBar.start();
 
-                const title = await SephirahAPI_GetTitleInfo(props.provider.id, props.titleId);
+                const title = await API_GetTitleInfo(props.provider.id, props.titleId);
                 setLoading(false);
 
                 setTitle(title.ok ? title.value : null);
@@ -48,7 +48,7 @@ export function MangaInfo(props: {
                 }
 
                 // get chapters
-                const chaptersRes = await SephirahAPI_GetChapters(props.provider.id, props.titleId, {
+                const chaptersRes = await API_GetChapters(props.provider.id, props.titleId, {
                     title: title.value!,
                 });
                 setChapters(chaptersRes.ok ? chaptersRes.value : []);
@@ -118,7 +118,7 @@ function MangaChapters(props: {
     return (
         <div className={"flex flex-col gap-2 w-full mb-2"}>
             <div className={"flex gap-2 w-full items-center"}>
-                <h1 className={"font-bold"}>{t("manga_info_page.label_locales")}</h1>
+                <h1 className={"font-bold whitespace-nowrap"}>{t("manga_info_page.label_locales")}</h1>
                 <hr className={"w-full"}/>
             </div>
             <div className={"flex gap-2 w-full"}>
@@ -144,7 +144,7 @@ function MangaChapters(props: {
                 }
             </div>
             <div className={"flex gap-2 w-full items-center"}>
-                <h1 className={"font-bold"}>{t("manga_info_page.label_chapters")}</h1>
+                <h1 className={"font-bold whitespace-nowrap"}>{t("manga_info_page.label_chapters")}</h1>
                 <hr className={"w-full"}/>
             </div>
             <div className={cn("grid gap-1 grid-cols-4 lg:grid-cols-8")}>
@@ -164,7 +164,7 @@ function ChapterButton(props: {
     chapter: Chapter,
 }) {
     return (
-        <Link href={`/manga/read?chapter=${props.chapter.id}&provider=${props.provider.id}&title=${props.title.id}`} >
+        <Link href={`/manga/read?chapter=${props.chapter.id}&provider=${props.provider.id}&title=${props.title.id}`} prefetch={false}>
             <Button size={"sm"} variant={"outline"} className={"w-full"}>
                 {props.chapter.name}
             </Button>
@@ -200,35 +200,37 @@ function MangaInfoSkeleton() {
 function MangaStatusBadge(props: {
     status: TitleStatus,
 }) {
+    const t = useTranslations();
+
     switch (props.status) {
         case TitleStatus.ONGOING: return (
             <Badge variant={"default"} className={"bg-blue-600 text-white"}>
                 <MdUpdate/>
-                Ongoing
+                {t("manga_info_page.status_badge.ongoing")}
             </Badge>
         )
         case TitleStatus.COMPLETED: return (
             <Badge>
                 <MdCheckCircle/>
-                Completed
+                {t("manga_info_page.status_badge.completed")}
             </Badge>
         )
         case TitleStatus.HIATUS: return (
             <Badge variant={"secondary"}>
                 <MdBedtime/>
-                Hiatus
+                {t("manga_info_page.status_badge.hiatus")}
             </Badge>
         )
         case TitleStatus.CANCELLED: return (
             <Badge variant={"destructive"}>
                 <MdCancel/>
-                Cancelled
+                {t("manga_info_page.status_badge.cancelled")}
             </Badge>
         )
         default: return (
-            <Badge variant={"default"} className={"bg-blue-600 text-white"}>
-                <MdUpdate/>
-                Updating
+            <Badge variant={"secondary"}>
+                <MdQuestionMark/>
+                {t("manga_info_page.status_badge.unknown")}
             </Badge>
         )
     }

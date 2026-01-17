@@ -3,15 +3,22 @@
 import {Err, ErrStr, Ok, Result} from "@/lib/util/result";
 import {Chapter, LocaleGroup, ProviderEntry, QuickSearchResult, Title} from "@/lib/data/manga";
 import {GetChaptersOpt, GetMangaProvider, MangaProviders} from "@/lib/provider/provider";
+import {LocaleType} from "@/i18n/locale";
+import {cookies} from "next/dist/server/request/cookies";
 
-export async function SephirahAPI_GetProviderList(): Promise<ProviderEntry[]> {
+export async function API_GetProviderList(): Promise<ProviderEntry[]> {
     return MangaProviders.map(c => ({
         id: c.id,
         name: c.displayName
     }));
 }
 
-export async function SephirahAPI_GetProviderEntry(providerId: string): Promise<ProviderEntry> {
+export async function API_SetLocale(locale: LocaleType): Promise<void> {
+    const cookieStore = await cookies();
+    cookieStore.set("locale", locale);
+}
+
+export async function API_GetProviderEntry(providerId: string): Promise<ProviderEntry> {
     const provider = GetMangaProvider(providerId);
     if (!provider) {
         throw new Error(`Unknown provider id: ${providerId}`);
@@ -23,7 +30,7 @@ export async function SephirahAPI_GetProviderEntry(providerId: string): Promise<
     };
 }
 
-export async function SephirahAPI_GetMangaProviderStatus(id: string): Promise<Result<void>> {
+export async function API_GetMangaProviderStatus(id: string): Promise<Result<void>> {
     const provider = GetMangaProvider(id);
     if (!provider) {
         return ErrStr(`Unknown provider id: ${id}`);
@@ -34,7 +41,7 @@ export async function SephirahAPI_GetMangaProviderStatus(id: string): Promise<Re
     return Ok(void 0);
 }
 
-export async function SephirahAPI_QuickSearch(providerId: string, keyword: string): Promise<Result<QuickSearchResult[]>> {
+export async function API_QuickSearch(providerId: string, keyword: string): Promise<Result<QuickSearchResult[]>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         return Ok(await provider.QuickSearch(keyword));
@@ -43,7 +50,7 @@ export async function SephirahAPI_QuickSearch(providerId: string, keyword: strin
     }
 }
 
-export async function SephirahAPI_GetTitleInfo(providerId: string, titleId: string): Promise<Result<Title>> {
+export async function API_GetTitleInfo(providerId: string, titleId: string): Promise<Result<Title>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         return Ok(await provider.GetTitleInfo(titleId));
@@ -52,7 +59,7 @@ export async function SephirahAPI_GetTitleInfo(providerId: string, titleId: stri
     }
 }
 
-export async function SephirahAPI_GetChapters(providerId: string, titleId: string, opts?: GetChaptersOpt): Promise<Result<LocaleGroup[]>> {
+export async function API_GetChapters(providerId: string, titleId: string, opts?: GetChaptersOpt): Promise<Result<LocaleGroup[]>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         const chapters = await provider.GetChapters(titleId, opts);
@@ -62,7 +69,7 @@ export async function SephirahAPI_GetChapters(providerId: string, titleId: strin
     }
 }
 
-export async function SephirahAPI_GetChapterInfo(providerId: string, titleId: string, chapterId: string): Promise<Result<Chapter>> {
+export async function API_GetChapterInfo(providerId: string, titleId: string, chapterId: string): Promise<Result<Chapter>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         const chapters = await provider.GetChapterInfo(titleId, chapterId);
@@ -72,7 +79,7 @@ export async function SephirahAPI_GetChapterInfo(providerId: string, titleId: st
     }
 }
 
-export async function SephirahAPI_GetImageURLs(providerId: string, titleId: string, chapterId: string): Promise<Result<string[]>> {
+export async function API_GetImageURLs(providerId: string, titleId: string, chapterId: string): Promise<Result<string[]>> {
     const provider = GetMangaProvider(providerId)!;
     try {
         const chapters = await provider.GetImageUrls(titleId, chapterId);

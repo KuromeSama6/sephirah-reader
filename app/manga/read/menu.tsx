@@ -2,7 +2,7 @@
 import {Chapter, Title} from "@/lib/data/manga";
 import { useWindowScroll } from "@uidotdev/usehooks";
 import {Button} from "@/components/ui/button";
-import {MdArrowBack, MdArrowForward, MdArrowLeft, MdMenu, MdOutlineArrowLeft} from "react-icons/md";
+import {MdArrowBack, MdArrowForward, MdArrowLeft, MdBook, MdHome, MdMenu, MdOutlineArrowLeft} from "react-icons/md";
 import {useEffect, useRef, useState} from "react";
 import {NavbarDropdownMenu} from "@/components/common/navbar";
 import {cn} from "@/lib/utils";
@@ -94,11 +94,17 @@ function MangaReaderBottomBar(props: {
         router.push(`/manga/read?chapter=${chapterId}&provider=${props.providerId}&title=${props.title.id}`);
         window.location.reload();
     }
-    
+
     return (
         <div className={cn("bottom-[-1] md:bottom-0 flex gap-2 w-full h-15 z-50 backdrop-blur-md backdrop-brightness-[0.2] px-2 fixed items-center transition-transform", props.visible ? "translate-y-0" : "translate-y-full")}>
             <Button variant={"outline"} size={"icon-lg"} disabled={!(props.chapter && props.chapter.prevId)} onClick={() => SwitchTo(props.chapter!.prevId!)}>
                 <MdArrowBack/>
+            </Button>
+            <Button variant={"outline"} size={"icon-lg"} className={"ms-auto"} disabled={!(props.chapter && props.chapter.nextId)} onClick={() => router.push(`/manga/title?provider=${props.providerId}&title=${props.title!.id}`)}>
+                <MdBook/>
+            </Button>
+            <Button variant={"outline"} size={"icon-lg"} disabled={!(props.chapter && props.chapter.nextId)} onClick={() => router.push("/")}>
+                <MdHome/>
             </Button>
             <Button variant={"outline"} size={"icon-lg"} className={"ms-auto"} disabled={!(props.chapter && props.chapter.nextId)} onClick={() => SwitchTo(props.chapter!.nextId!)}>
                 <MdArrowForward/>

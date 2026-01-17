@@ -8,7 +8,7 @@ import {
     MdFlag,
     MdGroup,
     MdGroups,
-    MdHome,
+    MdHome, MdLanguage,
     MdLeaderboard,
     MdLogin,
     MdMenu, MdOutlineSource, MdSettings
@@ -18,6 +18,11 @@ import Link from "next/link";
 import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 import {cn} from "@/lib/utils";
 import {useTranslations} from "use-intl";
+import {FaGithub} from "react-icons/fa";
+import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
+import {LocaleType} from "@/i18n/locale";
+import {getCookie} from "cookies-next/client";
+import {API_SetLocale} from "@/lib/api";
 
 interface Option {
     path: string;
@@ -54,9 +59,10 @@ const options: Option[] = [
 
 export function Navbar() {
     const pathName = usePathname();
-    const t = useTranslations("common.navbar.options");
+    const t = useTranslations();
 
     const [showMenuDropdown, setShowMenuDropdown] = useState(false);
+    const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
     return (
         <header className="flex sticky top-0 z-40 w-full bg-background border-b cursor-default">
@@ -71,14 +77,33 @@ export function Navbar() {
                                 <Link href={c.path} key={c.path} className={(c.className ?? []).join(" ")}>
                                     <Button size={"lg"} color={c.color ?? "default"} variant={"ghost"}>
                                         {c.icon}
-                                        <span className={"font-bold"}>{t(c.i18nKey)}</span>
+                                        <span className={"font-bold"}>{t("common.navbar.options." + c.i18nKey)}</span>
                                     </Button>
                                 </Link>
                             )
                         })
                     }
+                    <Button size={"lg"} variant={"ghost"} onClick={() => setShowLanguageSelector(true)}>
+                        <MdLanguage/>
+                        {t("global.label_language")}
+                    </Button>
+                    <LanguageSelector open={showLanguageSelector} onOpenChange={setShowLanguageSelector}/>
+                    <Link href={"https://github.com/KuromeSama6/sephirah-reader"} target={"_blank"}>
+                        <Button size={"lg"} variant={"ghost"}>
+                            <FaGithub/>
+                        </Button>
+                    </Link>
                 </div>
                 <div className={"block md:hidden ms-auto"}>
+                    <Button size={"lg"} variant={"ghost"} onClick={() => setShowLanguageSelector(true)}>
+                        <MdLanguage/>
+                        {t("global.label_language")}
+                    </Button>
+                    <Link href={"https://github.com/KuromeSama6/sephirah-reader"} target={"_blank"}>
+                        <Button size={"lg"} variant={"ghost"}>
+                            <FaGithub/>
+                        </Button>
+                    </Link>
                     <Button size={"icon"} variant={"ghost"} onClick={() => setShowMenuDropdown(true)}>
                         <MdMenu/>
                     </Button>
@@ -94,14 +119,14 @@ export function NavbarDropdownMenu(props: {
     setOpen: (open: boolean) => void,
 }) {
     const pathName = usePathname();
-    const t = useTranslations("common.navbar.options");
+    const t = useTranslations();
 
     return (
         <Sheet open={props.open} onOpenChange={props.setOpen}>
             <SheetContent side={"top"}>
                 <SheetHeader>
-                    <SheetTitle>Sephirah Reader</SheetTitle>
-                    <SheetDescription>Sephirah Reader is an open source, web-based manga reader supporting multiple sources.</SheetDescription>
+                    <SheetTitle>{t("global.title")}</SheetTitle>
+                    <SheetDescription>{t("home_page.subtitle")}</SheetDescription>
                 </SheetHeader>
                 <div className={"mx-2 mb-2 w-full flex flex-col gap-4"}>
                     {
@@ -110,7 +135,7 @@ export function NavbarDropdownMenu(props: {
                                 <Link href={c.path} key={c.path} className={cn("w-full", c.className)} onClick={() => props.setOpen(false)}>
                                     <div className={cn("flex gap-2 items-center", pathName === c.path ? "" : "text-muted-foreground")}>
                                         {c.icon}
-                                        <span className={pathName === c.path ? "font-bold" : ""}>{t(c.i18nKey)}</span>
+                                        <span className={pathName === c.path ? "font-bold" : ""}>{t("common.navbar.options." + c.i18nKey)}</span>
                                     </div>
                                 </Link>
                             )
@@ -119,5 +144,45 @@ export function NavbarDropdownMenu(props: {
                 </div>
             </SheetContent>
         </Sheet>
+    )
+}
+
+function LanguageSelector(props: {
+    open: boolean,
+    onOpenChange: (open: boolean) => void,
+}) {
+    const current = getCookie("locale") as LocaleType || "en";
+
+    interface Locale {
+        value: LocaleType;
+        label: string;
+    }
+
+    const locales: Locale[] = [
+        {
+            value: "en",
+            label: "English"
+        },
+        {
+            value: "zh",
+            label: "中文"
+        }
+    ]
+
+    async function Submit(locale: LocaleType) {
+        await API_SetLocale(locale);
+        window.location.reload();
+    }
+
+    return (
+        <Select open={props.open} onOpenChange={props.onOpenChange} value={current} onValueChange={Submit}>
+            <SelectContent>
+                {
+                    locales.map((c, i) => (
+                        <SelectItem value={c.value} key={i}>{c.label}</SelectItem>
+                    ))
+                }
+            </SelectContent>
+        </Select>
     )
 }

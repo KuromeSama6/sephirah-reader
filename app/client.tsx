@@ -9,7 +9,7 @@ import {
 import {MdBook, MdCircle, MdMoreHoriz, MdSearch} from "react-icons/md";
 import {Button} from "@/components/ui/button";
 import {FormEvent, useEffect, useState} from "react";
-import {SephirahAPI_GetMangaProviderStatus, SephirahAPI_QuickSearch} from "@/lib/api";
+import {API_GetMangaProviderStatus, API_QuickSearch} from "@/lib/api";
 import {Badge} from "@/components/ui/badge";
 import {cn, IsChinese} from "@/lib/utils";
 import {Spinner} from "@/components/ui/spinner";
@@ -80,7 +80,7 @@ export function Search(props: {
 
         const results: ResultEntry[] = [];
         for (const provider of props.providerList) {
-            SephirahAPI_QuickSearch(provider.id, kw.trim())
+            API_QuickSearch(provider.id, kw.trim())
                 .then(res => {
                     if (res.ok) {
                         for (const result of res.value) {
@@ -150,7 +150,7 @@ function SearchResultBox(props: {
     const {provider, result} = props.entry;
 
     return (
-        <Link className={"flex gap-2 w-full p-2 border border-border rounded-md hover:bg-accent hover:cursor-pointer transition duration-200"} href={`/manga/title?provider=${provider.id}&title=${result.id}`}>
+        <Link className={"flex gap-2 w-full p-2 border border-border rounded-md hover:bg-accent hover:cursor-pointer transition duration-200"} href={`/manga/title?provider=${provider.id}&title=${result.id}`} prefetch={false}>
             <ImageEx src={result.coverUrl} alt={""} width={128} height={256} className={"object-cover min-w-24 md:min-w-32 rounded-md"} placeholder={"blur"} blurDataURL={"https://placehold.co/1441x2048/000/FFF?text=Image%20Loading&font=source-sans-pro"}/>
             <div className={"flex flex-col gap-1 ms-auto w-full justify-center"}>
                 <span className={"text-muted-foreground text-sm"}>{provider.name}</span>
@@ -183,7 +183,7 @@ function ProviderListPreview(props: {
         for (const provider of props.providers) {
             if (status[provider.id] !== null) continue;
 
-            SephirahAPI_GetMangaProviderStatus(provider.id)
+            API_GetMangaProviderStatus(provider.id)
                 .then(res => {
                     SetProviderStatus(provider.id, res.ok);
                 })

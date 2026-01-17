@@ -1,10 +1,10 @@
 import {Search} from "@/app/client";
-import {SephirahAPI_GetProviderList} from "@/lib/api";
+import {API_GetProviderList} from "@/lib/api";
 import {useTranslations} from "use-intl";
 import {getTranslations} from "next-intl/server";
 
 export default async function Page() {
-    const providers = await SephirahAPI_GetProviderList();
+    const providers = await API_GetProviderList();
     const t = await getTranslations();
 
     return (

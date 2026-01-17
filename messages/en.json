@@ -17,6 +17,7 @@
             "content_load_error": "Content Load Error",
             "content_load_error_message": "An error occurred while loading this content: {err}"
         },
+        "label_language": "Langauge",
         "title": "Sephirah Reader"
     },
     "home_page": {
@@ -25,7 +26,14 @@
     "manga_info_page": {
         "label_chapter_groups": "Chapter Groups",
         "label_chapters": "Chapters",
-        "label_locales": "Localizations"
+        "label_locales": "Localizations",
+        "status_badge": {
+            "cancelled": "Cancelled",
+            "completed": "Completed",
+            "hiatus": "Hiatus",
+            "ongoing": "Ongoing",
+            "unknown": "Unknown"
+        }
     },
     "reader": {
         "image_load_error": "Can't load this image. Try refreshing.",
