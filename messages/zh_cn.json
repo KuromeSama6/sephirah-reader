@@ -26,5 +26,10 @@
         "label_chapter_groups": "分组",
         "label_chapters": "章节",
         "label_locales": "本地化组"
+    },
+    "reader": {
+        "image_load_error": "无法加载该图片。请尝试刷新页面。",
+        "label_image_decoding": "图片解码中...",
+        "label_image_loading": "图片加载中..."
     }
 }

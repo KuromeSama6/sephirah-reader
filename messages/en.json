@@ -26,5 +26,10 @@
         "label_chapter_groups": "Chapter Groups",
         "label_chapters": "Chapters",
         "label_locales": "Localizations"
+    },
+    "reader": {
+        "image_load_error": "Can't load this image. Try refreshing.",
+        "label_image_decoding": "Image Decoding...",
+        "label_image_loading": "Image Loading..."
     }
 }

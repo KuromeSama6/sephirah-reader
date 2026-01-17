@@ -2,6 +2,8 @@ import "server-only";
 import {Author, Chapter, LocaleGroup, QuickSearchResult, Title, TitleStatus} from "@/lib/data/manga";
 import {GetChaptersOpt, MangaProvider} from "@/lib/provider/provider";
 import {getTranslations} from "next-intl/server";
+import * as cheerio from "cheerio";
+import CryptoJS from "crypto-js";
 
 const API_BASE_URL = "https://api.2025copy.com/api/v3";
 const API_HEADER_VERSION = "2025.11.21";
@@ -27,6 +29,68 @@ function GetAPIRequestURL(path: string): URL {
     url.searchParams.append("update", "true");
 
     return url;
+}
+
+type ExtractedKeys = {
+    cct: string;
+    contentKey: string;
+}
+
+function ExtractKeys(jsSource: string): ExtractedKeys | null {
+    let cct: string;
+    let contentKey: string;
+
+    const cctMatch = jsSource.match(/\b(?:var|let|const)\s+cct\s*=\s*['"]([^'"]*)['"]/);
+    const contentKeyMatch = jsSource.match(/\b(?:var|let|const)\s+contentKey\s*=\s*['"]([^'"]*)['"]/);
+
+    if (cctMatch) {
+        cct = cctMatch[1];
+    } else {
+        return null;
+    }
+
+    if (contentKeyMatch) {
+        contentKey = contentKeyMatch[1];
+    } else {
+        return null;
+    }
+
+    return {
+        cct,
+        contentKey,
+    }
+}
+
+function Utf8ToHex(str) {
+    const enc = CryptoJS.enc;
+    return enc.Utf8.parse(str).toString(enc.Hex);
+}
+
+// Great thanks to https://blog.skyju.cc/post/copymanga-chapter-reverse-engineering/ for figuring out how to decrypt the response!
+function DecryptImageUrl(keys: ExtractedKeys): Promise<string[] | null> {
+    const enc = CryptoJS.enc;
+    const key = enc.Hex.parse(Utf8ToHex(keys.cct));
+    const ivHex = Utf8ToHex(keys.contentKey.substring(0, 16));
+    const body = keys.contentKey.substring(16);
+
+    const iv = enc.Hex.parse(ivHex);
+    const encryptedBase64 = enc.Base64.stringify(enc.Hex.parse(body));
+
+    return new Promise((resolve, reject) => {
+        try {
+            const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+                iv,
+                mode: CryptoJS.mode.CBC,
+            });
+
+            const json = JSON.parse(decrypted.toString(enc.Utf8));
+            resolve(json.map(c => c.url));
+
+        } catch (err) {
+            console.log("Decryption error:", err);
+            reject(err);
+        }
+    });
 }
 
 export const CopyMangaProvider: MangaProvider = {
@@ -167,6 +231,8 @@ export const CopyMangaProvider: MangaProvider = {
                     id: c.uuid,
                     ord: c.ordered,
                     name: c.name,
+                    prevId: c.prev || undefined,
+                    nextId: c.next || undefined,
                 });
             }
 
@@ -200,11 +266,35 @@ export const CopyMangaProvider: MangaProvider = {
             id: data.chapter.uuid,
             name: data.chapter.name,
             ord: data.chapter.ordered,
+            prevId: data.chapter.prev || undefined,
+            nextId: data.chapter.next || undefined,
         };
     },
 
-    async GetImageUrls(chapterId: string): Promise<string[]> {
+    async GetImageUrls(titleId: string, chapterId: string): Promise<string[]> {
+        const res = await fetch(`https://www.mangacopy.com/comic/${titleId}/chapter/${chapterId}`, {
+            cache: "force-cache",
+            next: {
+                revalidate: 3600,
+            }
+        });
+        if (!res.ok) {
+            throw new Error(`Failed to fetch chapter page: ${res.status}`);
+        }
 
-        return [];
+        const text = await res.text();
+        const ch = cheerio.load(text);
+
+        // extract cct and contentKey from script tag
+        const scriptContent = ch("script").text();
+        const keys = ExtractKeys(scriptContent);
+        if (keys == null)
+            throw new Error(`Failed to parse content keys`);
+
+        const ret = await DecryptImageUrl(keys);
+        if (ret == null)
+            throw new Error(`Failed to decrypt image URLs`);
+
+        return ret;
     }
 }

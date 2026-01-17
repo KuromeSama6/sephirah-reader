@@ -23,6 +23,8 @@ export interface Chapter {
     readonly id: string;
     readonly ord: number;
     readonly name: string;
+    readonly prevId?: string;
+    readonly nextId?: string;
 }
 
 export interface LocaleGroup {

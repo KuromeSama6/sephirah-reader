@@ -71,3 +71,13 @@ export async function SephirahAPI_GetChapterInfo(providerId: string, titleId: st
         return Err(error as Error);
     }
 }
+
+export async function SephirahAPI_GetImageURLs(providerId: string, titleId: string, chapterId: string): Promise<Result<string[]>> {
+    const provider = GetMangaProvider(providerId)!;
+    try {
+        const chapters = await provider.GetImageUrls(titleId, chapterId);
+        return Ok(chapters);
+    } catch (error) {
+        return Err(error as Error);
+    }
+}

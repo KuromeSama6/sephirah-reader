@@ -82,31 +82,42 @@ export function Navbar() {
                     <Button size={"icon"} variant={"ghost"} onClick={() => setShowMenuDropdown(true)}>
                         <MdMenu/>
                     </Button>
-
-                    <Sheet open={showMenuDropdown} onOpenChange={setShowMenuDropdown}>
-                        <SheetContent side={"top"}>
-                            <SheetHeader>
-                                <SheetTitle>Sephirah Reader</SheetTitle>
-                                <SheetDescription>Sephirah Reader is an open source, web-based manga reader supporting multiple sources.</SheetDescription>
-                            </SheetHeader>
-                            <div className={"mx-2 mb-2 w-full flex flex-col gap-4"}>
-                                {
-                                    options.map(c => {
-                                        return (
-                                            <Link href={c.path} key={c.path} className={cn("w-full", c.className)} onClick={() => setShowMenuDropdown(false)}>
-                                                <div className={cn("flex gap-2 items-center", pathName === c.path ? "" : "text-muted-foreground")}>
-                                                    {c.icon}
-                                                    <span className={pathName === c.path ? "font-bold" : ""}>{t(c.i18nKey)}</span>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+                    <NavbarDropdownMenu open={showMenuDropdown} setOpen={setShowMenuDropdown}/>
                 </div>
             </div>
         </header>
+    )
+}
+
+export function NavbarDropdownMenu(props: {
+    open: boolean,
+    setOpen: (open: boolean) => void,
+}) {
+    const pathName = usePathname();
+    const t = useTranslations("common.navbar.options");
+
+    return (
+        <Sheet open={props.open} onOpenChange={props.setOpen}>
+            <SheetContent side={"top"}>
+                <SheetHeader>
+                    <SheetTitle>Sephirah Reader</SheetTitle>
+                    <SheetDescription>Sephirah Reader is an open source, web-based manga reader supporting multiple sources.</SheetDescription>
+                </SheetHeader>
+                <div className={"mx-2 mb-2 w-full flex flex-col gap-4"}>
+                    {
+                        options.map(c => {
+                            return (
+                                <Link href={c.path} key={c.path} className={cn("w-full", c.className)} onClick={() => props.setOpen(false)}>
+                                    <div className={cn("flex gap-2 items-center", pathName === c.path ? "" : "text-muted-foreground")}>
+                                        {c.icon}
+                                        <span className={pathName === c.path ? "font-bold" : ""}>{t(c.i18nKey)}</span>
+                                    </div>
+                                </Link>
+                            )
+                        })
+                    }
+                </div>
+            </SheetContent>
+        </Sheet>
     )
 }

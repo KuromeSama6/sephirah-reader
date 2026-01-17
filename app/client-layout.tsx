@@ -6,13 +6,17 @@ import {Navbar} from "@/components/common/navbar";
 import {Button} from "@/components/ui/button";
 import {Toaster} from "sonner";
 import {LoadingBarContainer} from "react-top-loading-bar";
+import {usePathname} from "next/navigation";
 
 export function ClientLayout(props: {
     children: ReactNode;
 }) {
+    const path = usePathname();
+    const isReader = path == "/manga/read";
+
     return (
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-            <Navbar/>
+            {!isReader && <Navbar/>}
             <LoadingBarContainer>
                 <div>
                     {props.children}

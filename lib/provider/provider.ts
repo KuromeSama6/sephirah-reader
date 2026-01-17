@@ -16,7 +16,7 @@ export interface MangaProvider {
     GetTitleInfo(id: string): Promise<Title>;
     GetChapters(id: string, options?: GetChaptersOpt): Promise<LocaleGroup[]>;
     GetChapterInfo(titleId: string, id: string): Promise<Chapter>;
-    GetImageUrls(chapterId: string): Promise<string[]>;
+    GetImageUrls(titleId: string, chapterId: string): Promise<string[]>;
 }
 
 export const MangaProviders: MangaProvider[] = [
