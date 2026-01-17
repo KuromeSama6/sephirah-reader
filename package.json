@@ -6,7 +6,8 @@
     "dev": "bun --bun next dev",
     "build": "bun --bun next build",
     "start": "bun --bun next start",
-    "lint": "bun --bun eslint"
+    "lint": "bun --bun eslint",
+    "docker": "docker build -f Dockerfile.bun -t sephirah-reader ."
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.12",
