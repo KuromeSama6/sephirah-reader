@@ -92,7 +92,6 @@ function MangaReaderBottomBar(props: {
     function SwitchTo(chapterId: string) {
         if (!props.title) return;
         router.push(`/manga/read?chapter=${chapterId}&provider=${props.providerId}&title=${props.title.id}`);
-        window.location.reload();
     }
 
     return (

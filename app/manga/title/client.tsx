@@ -166,7 +166,7 @@ function ChapterButton(props: {
     return (
         <Link href={`/manga/read?chapter=${props.chapter.id}&provider=${props.provider.id}&title=${props.title.id}`} prefetch={false}>
             <Button size={"sm"} variant={"outline"} className={"w-full"}>
-                {props.chapter.name}
+                <span className={"truncate"}>{props.chapter.name}</span>
             </Button>
         </Link>
     );

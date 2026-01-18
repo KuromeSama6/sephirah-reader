@@ -19,10 +19,11 @@ import {Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTi
 import {cn} from "@/lib/utils";
 import {useTranslations} from "use-intl";
 import {FaGithub} from "react-icons/fa";
-import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 import {LocaleType} from "@/i18n/locale";
 import {getCookie} from "cookies-next/client";
 import {API_SetLocale} from "@/lib/api";
+import {Dialog, DialogContent, DialogFooter, DialogTitle} from "@/components/ui/dialog";
+import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 
 interface Option {
     path: string;
@@ -152,6 +153,7 @@ function LanguageSelector(props: {
     onOpenChange: (open: boolean) => void,
 }) {
     const current = getCookie("locale") as LocaleType || "en";
+    const t = useTranslations();
 
     interface Locale {
         value: LocaleType;
@@ -169,20 +171,34 @@ function LanguageSelector(props: {
         }
     ]
 
-    async function Submit(locale: LocaleType) {
-        await API_SetLocale(locale);
+    const [selected, setSelected] = useState<LocaleType>(current);
+
+    async function Submit() {
+        props.onOpenChange(false);
+
+        if (selected == current) return;
+        await API_SetLocale(selected);
         window.location.reload();
     }
 
     return (
-        <Select open={props.open} onOpenChange={props.onOpenChange} value={current} onValueChange={Submit}>
-            <SelectContent>
-                {
-                    locales.map((c, i) => (
-                        <SelectItem value={c.value} key={i}>{c.label}</SelectItem>
-                    ))
-                }
-            </SelectContent>
-        </Select>
+        <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+            <DialogContent>
+                <DialogTitle>{t("global.language_selector.title")}</DialogTitle>
+                <RadioGroup value={selected} onValueChange={v => setSelected(v as LocaleType)} className={"gap-2"}>
+                    {
+                        locales.map((c, i) => (
+                            <div className={"flex gap-2 items-center"} key={i}>
+                                <RadioGroupItem value={c.value} id={c.value}/>
+                                <label htmlFor={c.value}>{c.label}</label>
+                            </div>
+                        ))
+                    }
+                </RadioGroup>
+                <DialogFooter>
+                    <Button onClick={Submit}>{t("generic.confirm")}</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }

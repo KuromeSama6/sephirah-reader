@@ -1,12 +1,13 @@
 "use client";
 
 import {ThemeProvider} from "next-themes";
-import {ReactNode} from "react";
+import {ReactNode, useEffect, useRef} from "react";
 import {Navbar} from "@/components/common/navbar";
 import {Button} from "@/components/ui/button";
 import {Toaster} from "sonner";
-import {LoadingBarContainer} from "react-top-loading-bar";
-import {usePathname} from "next/navigation";
+import LoadingBar, {LoadingBarContainer, LoadingBarRef} from "react-top-loading-bar";
+import {usePathname, useSearchParams} from "next/navigation";
+import {useDefaultLoadingBar} from "@/lib/util/client";
 
 export function ClientLayout(props: {
     children: ReactNode;

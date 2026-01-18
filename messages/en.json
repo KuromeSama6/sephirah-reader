@@ -10,7 +10,10 @@
         }
     },
     "generic": {
-        "default": "Default"
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "default": "Default",
+        "error": "Error"
     },
     "global": {
         "error": {
@@ -18,6 +21,9 @@
             "content_load_error_message": "An error occurred while loading this content: {err}"
         },
         "label_language": "Langauge",
+        "language_selector": {
+            "title": "Select Language"
+        },
         "title": "Sephirah Reader"
     },
     "home_page": {

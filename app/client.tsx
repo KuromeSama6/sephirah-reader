@@ -19,6 +19,7 @@ import {ImageEx} from "@/components/util/client";
 import Fuse from "fuse.js";
 import {ChineseSimplifiedToTraditional, ChineseTraditionalToSimplified} from "@/lib/opencc";
 import Link from "next/link";
+import {useTranslations} from "use-intl";
 
 interface ResultEntry {
     provider: ProviderEntry,
@@ -33,6 +34,7 @@ export function Search(props: {
     const [searched, setSearched] = useState(false);
     const [results, setResults] = useState<ResultEntry[]>([]);
     const [isSimplifiedChinese, setIsSimplifiedChinese] = useState(true);
+    const [loadedProviders, setLoadedProviders] = useState<string[]>([]);
 
     function OnSearchChange(text: string) {
         setQuery(text);
@@ -75,6 +77,7 @@ export function Search(props: {
         setSearched(true);
         setLoading(true);
         setResults([]);
+        setLoadedProviders([]);
 
         let finishedCount = 0;
 
@@ -82,6 +85,8 @@ export function Search(props: {
         for (const provider of props.providerList) {
             API_QuickSearch(provider.id, kw.trim())
                 .then(res => {
+                    setLoadedProviders(prev => [...prev, provider.id]);
+
                     if (res.ok) {
                         for (const result of res.value) {
                             results.push({
@@ -132,7 +137,7 @@ export function Search(props: {
                     <MdMoreHoriz/>
                 </Button>
             </form>
-            {searched ? <SearchProviderList providers={props.providerList} results={results}/> : <ProviderListPreview providers={props.providerList}/>}
+            {searched ? <SearchProviderList providers={props.providerList} results={results} loaded={loadedProviders}/> : <ProviderListPreview providers={props.providerList}/>}
             <div className={"flex flex-col gap-2 w-full"}>
                 {
                     results.map((row, i) => (
@@ -213,6 +218,7 @@ function ProviderListPreview(props: {
 }
 
 function SearchProviderList(props: {
+    loaded?: string[],
     providers: ProviderEntry[],
     results: ResultEntry[],
 }) {
@@ -221,6 +227,12 @@ function SearchProviderList(props: {
     for (const provider of props.providers) {
         const count = props.results.filter(c => c.provider.id === provider.id);
         data[provider.id] = count.length;
+    }
+
+    const t = useTranslations();
+
+    function IsLoaded(provider: ProviderEntry): boolean {
+        return (props.loaded && props.loaded.includes(provider.id)) as boolean;
     }
 
     return (
@@ -232,9 +244,7 @@ function SearchProviderList(props: {
                     return (
                         <Badge key={i} variant={isErr ? "destructive" : "outline"}>
                             <span>{c.name}</span>
-                            <Badge variant={"outline"}>
-                                <span>{isErr ? "" : String(data[c.id])}</span>
-                            </Badge>
+                            <span>{isErr ? t("generic.error") : !IsLoaded(c) ? <Spinner/> : String(data[c.id])}</span>
                         </Badge>
                     )
                 })

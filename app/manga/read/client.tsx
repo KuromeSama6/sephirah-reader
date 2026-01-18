@@ -57,7 +57,7 @@ export function MangaReader(props: {
         return () => {
             loadingBar.complete();
         }
-    }, []);
+    }, [props.title, props.chapter, props.providerId]);
 
     return (
         <div>
@@ -75,7 +75,7 @@ export function MangaReader(props: {
 function ReaderSkeleton() {
     return (
         <div className={"mt-32 w-full flex flex-col items-center gap-2 px-6"}>
-            <Skeleton className={"h-50 w-[50%] rounded-md"}/>
+            <Skeleton className={"h-64 w-[50%] max-w-64 rounded-md"}/>
             <Skeleton className={"h-10 w-50"}/>
             <Skeleton className={"h-6 w-30"}/>
         </div>
@@ -88,7 +88,7 @@ function ReaderPreview(props: {
 }) {
     return (
         <div className={"mt-32 w-full flex flex-col items-center gap-2 px-6"}>
-            <ImageEx src={props.title.metadata.coverUrl} alt={"cover"} width={1024} height={2048} className={"w-[50%] rounded-md"}/>
+            <ImageEx src={props.title.metadata.coverUrl} alt={"cover"} width={1024} height={2048} className={"w-[50%] max-w-64 rounded-md"}/>
             <h1 className={"text-xl font-bold"}>{props.title.metadata.name}</h1>
             <p className={"text-sm text-muted-foreground"}>{props.chapter.name}</p>
         </div>
@@ -102,7 +102,7 @@ function VerticalScrollReader(props: {
         <div className={"flex flex-col w-full"}>
             {
                 props.urls.map((c, i) => (
-                    <ReaderPage url={c} key={i} index={i + 1} observeScroll={false}/>
+                    <ReaderPage url={c} key={c} index={i + 1} observeScroll={false}/>
                 ))
             }
         </div>
@@ -146,7 +146,7 @@ function ReaderPage(props: {
         return () => {
             observer.disconnect();
         }
-    }, []);
+    }, [props.url]);
 
     useEffect(() => {
         if (!visible || loaded) return;
@@ -195,7 +195,7 @@ function ReaderPage(props: {
         <div className={"w-full md:max-w-[50vw] mx-auto min-h-50"} ref={containerRef}>
             <canvas ref={canvasRef} className={cn("w-full", !loaded || error ? "hidden" : "")}/>
             {(!loaded || error) &&
-                <div className={"w-full flex flex-col h-128 items-center justify-center gap-2"}>
+                <div className={"w-full flex flex-col h-[80vh] items-center justify-center gap-2 border border-b-zinc-400"}>
                     <h1 className={"text-muted-foreground font-bold text-[150px]"}>{props.index}</h1>
                     {error && <p className={"text-destructive"}>{t("reader.image_load_error")}</p>}
                 </div>
